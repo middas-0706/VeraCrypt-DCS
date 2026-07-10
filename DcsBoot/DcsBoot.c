@@ -418,17 +418,20 @@ DcsBootMain(
 	ERR_PRINT(L"%a\nStatus -  %r\n", gDoExecCmdMsg, res);
 	if ((res == EFI_SECURITY_VIOLATION) || (res == EFI_ACCESS_DENIED)) {
 		ERR_PRINT(L"\n\
-Secure Boot refused to start the Windows boot manager used by VeraCrypt.\n\
-The firmware no longer trusts a component of the installed boot chain.\n\
-This can happen after a Secure Boot certificate (CA) update or after a\n\
-change of the firmware Secure Boot configuration.\n\
+The Secure Boot policy rejected the Windows boot manager used by VeraCrypt.\n\
+This can be caused by a missing signing CA, a dbx image/CA revocation, or\n\
+another change to the firmware Secure Boot configuration.\n\
 \n\
-To recover:\n\
+To recover safely:\n\
  1. Temporarily disable Secure Boot in the firmware setup and start Windows.\n\
- 2. Run VeraCrypt Setup in Repair mode to reinstall trusted bootloaders.\n\
- 3. Re-enable Secure Boot.\n\
-Alternatively, boot the VeraCrypt Rescue Disk and select\n\
-'Restore VeraCrypt loader binaries to system disk'.\n\
+ 2. Restore a compatible Secure Boot policy or complete the Windows CA and\n\
+    2023-signed Boot Manager update. Keep the VeraCrypt System Favorites\n\
+    service and its loader update enabled.\n\
+ 3. Run current VeraCrypt Setup in Repair mode. It can import a compatible\n\
+    serviced Windows Boot Manager even if the ESP path still holds VeraCrypt.\n\
+ 4. Review the diagnostics, then re-enable Secure Boot and test one reboot.\n\
+The Rescue Disk can restore VeraCrypt files; it cannot manufacture a current\n\
+Windows Boot Manager or override a firmware revocation.\n\
 \n\
 More information: https://veracrypt.jp/en/EFISecureBoot.html\n");
 	}

@@ -4,7 +4,9 @@ LEGACY - DO NOT USE ON MODERN SYSTEMS
 This custom-key procedure predates the Microsoft Secure Boot 2023 CA
 transition. It replaces the firmware Secure Boot databases and enrolls
 only the 2011-era Microsoft certificates (MicWinProPCA2011,
-MicCorUEFCA2011). On systems whose Windows boot chain is signed through
+MicCorUEFCA2011). It also replaces the current dbx revocation database
+with the obsolete 2018 snapshot bundled in this directory. On systems
+whose Windows boot chain is signed through
 the 2023 certificate authorities (Windows UEFI CA 2023), running this
 script breaks the Windows Boot Manager handoff after successful
 VeraCrypt pre-boot authentication (system stuck after "Success").
@@ -18,7 +20,9 @@ firmware setup (see https://veracrypt.jp/en/EFISecureBoot.html).
 
 This procedure remains documented only for custom-mode builds
 (VC_EFI_CUSTOM_MODE) and expert scenarios. It is unsupported for the
-standard VeraCrypt Secure Boot path.
+standard VeraCrypt Secure Boot path. The script exits without making any
+change unless its explicit destructive-operation acknowledgement switch
+and its separate obsolete-dbx acknowledgement switch are both supplied.
 =======================================================================
 
 Secure Boot:
@@ -31,12 +35,14 @@ to update Secure Boot configuration steps:
 3. Enter BIOS configuration
 4. Switch Secure boot to setup mode (or custom mode or clear keys). It deletes PK (platform certificate) and allows to load DCS platform key.
 5. Boot Windows
-6. Edit the file sb_set_siglists.ps1 and uncomment the lines related to the manufacturer of the machine and which reference the certfiicates names gethered from step 2. 
-5. execute from admin command prompt
-   powershell -ExecutionPolicy Bypass -File sb_set_siglists.ps1
+6. Edit sb_set_siglists.ps1 and uncomment only the lines for the machine manufacturer that reference the certificate names gathered in step 2.
+7. Execute from an elevated command prompt only after reviewing the script
+   and accepting that it replaces PK, KEK, db, and dbx:
+   powershell -ExecutionPolicy Bypass -File sb_set_siglists.ps1 -IUnderstandThisIsLegacyAndReplacesFirmwareSecureBootKeys -IUnderstandTheBundledDbxIsObsolete
 It sets in PK (platform key) - DCS_platform
 It sets in KEK (key exchange key) - DCS_key_exchange
 It sets in db - DCS_sign MicWinProPCA2011_2011-10-19 MicCorUEFCA2011_2011-06-27 and the other certificates specific to your machine.
+It replaces dbx with a 2018 snapshot that is not a safe substitute for the current manufacturer/Microsoft dbx.
 
 All DCS modules are protected by DCS_sign. 
 All Windows modules are protected by MicWinProPCA2011_2011-10-19

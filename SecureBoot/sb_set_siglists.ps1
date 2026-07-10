@@ -1,4 +1,41 @@
-Set-ExecutionPolicy Bypass -Force
+param(
+	[switch]$IUnderstandThisIsLegacyAndReplacesFirmwareSecureBootKeys,
+	[switch]$IUnderstandTheBundledDbxIsObsolete
+)
+
+Set-StrictMode -Version 2.0
+$ErrorActionPreference = "Stop"
+
+if (-not $IUnderstandThisIsLegacyAndReplacesFirmwareSecureBootKeys -or
+	-not $IUnderstandTheBundledDbxIsObsolete)
+{
+	$warning = @"
+This legacy expert-only script replaces the firmware PK, KEK, db, and dbx
+with a custom 2011-era key set. It removes the Microsoft 2023 CAs and can
+make current Windows, recovery media, option ROMs, and other operating
+systems unbootable.
+
+The bundled dbx is a 2018 snapshot. Replacing a current dbx with it discards
+later revocations and weakens Secure Boot protection.
+
+The standard VeraCrypt Secure Boot configuration does not require this
+script. Restore/use the manufacturer Secure Boot keys instead.
+
+Only for an intentional VC_EFI_CUSTOM_MODE deployment, re-run with:
+  -IUnderstandThisIsLegacyAndReplacesFirmwareSecureBootKeys
+  -IUnderstandTheBundledDbxIsObsolete
+"@
+	Write-Error $warning -ErrorAction Continue
+	exit 2
+}
+
+$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$currentPrincipal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
+if (-not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
+{
+	throw "This script must be run from an elevated PowerShell session."
+}
+
 Import-Module secureboot
 
 $scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
